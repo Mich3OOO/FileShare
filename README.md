@@ -1,0 +1,82 @@
+# FileShare
+
+Self-hosted file sharing with access codes, expiring download links and an admin dashboard.
+
+- **Admin**: sign in, generate access codes, upload files directly, manage active files and codes, change password.
+- **Guest**: use an access code to upload a file of **any size**, choosing a retention of 1, 3 or 7 days.
+- **Download links** are public (anyone with the link). **Every download extends the link** by the same duration chosen at upload.
+- Expired files are **deleted automatically** (blob + database row).
+
+## Stack
+
+- ASP.NET Core 8 (minimal APIs, static HTML/CSS/JS frontend)
+- PostgreSQL 16 (EF Core / Npgsql)
+- Docker + Docker Compose
+
+## Quick start
+
+```bash
+cp .env.example .env    # then edit passwords
+docker compose up -d --build
+```
+
+Open `http://localhost:8080` and sign in with the credentials from `.env`
+(`ADMIN_USER` / `ADMIN_PASSWORD`; the seeded account is only created on first start
+against an empty database).
+
+| URL | Purpose |
+|---|---|
+| `/login.html` | Admin sign in |
+| `/index.html` | Admin dashboard |
+| `/upload.html` | Guest upload (optionally `?code=XXXX` to prefill the code) |
+| `/d/{token}` | Public download link |
+
+## Behavior details
+
+- **Access codes**
+  - *Single-use*: consumed after the first successful upload (hidden from the active list, purged 7 days later).
+  - *Reusable*: can be used any number of times until deleted by the admin.
+- **Retention**: uploader picks 1, 3 or 7 days at upload time.
+- **Link extension**: `expires_at += duration_days` on every download request.
+- **Cleanup**: a background job runs every 10 minutes and deletes expired files and old consumed codes.
+- **Uploads** are streamed directly to disk (no in-memory buffering, no size limit). Note that
+  any reverse proxy in front of the app must also allow large request bodies (e.g. nginx
+  `client_max_body_size`).
+
+## Configuration
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `POSTGRES_PASSWORD` | `fileshare` | Database password |
+| `ADMIN_USER` | `admin` | Initial admin username |
+| `ADMIN_PASSWORD` | `change-me` | Initial admin password (change it after first sign in) |
+| `PORT` | `8080` | Host port |
+| `ConnectionStrings__Default` | local dev value | PostgreSQL connection string |
+| `Storage__RootPath` | `./data` | Where uploaded files are stored |
+
+## Local development
+
+```bash
+docker compose up -d db
+cd src/FileShare.Api
+Storage__RootPath=./data dotnet run
+```
+
+The database schema is created automatically on startup (`EnsureCreated`).
+
+## API overview
+
+| Endpoint | Auth | Description |
+|---|---|---|
+| `POST /api/auth/login` | – | Sign in (form: `username`, `password`) |
+| `POST /api/auth/logout` | – | Sign out |
+| `GET /api/auth/me` | admin | Current username |
+| `POST /api/auth/password` | admin | Change password |
+| `GET /api/files` | admin | Active files with links and expiry |
+| `POST /api/files/upload?days=3` | admin | Upload without code |
+| `DELETE /api/files/{id}` | admin | Delete a file |
+| `GET /api/codes` | admin | Active access codes |
+| `POST /api/codes` | admin | Create code (`{"isSingleUse": true}`) |
+| `DELETE /api/codes/{id}` | admin | Delete a code |
+| `POST /api/guest/upload?code=X&days=3` | code | Guest upload (multipart) |
+| `GET /d/{token}` | – | Download (extends expiry) |

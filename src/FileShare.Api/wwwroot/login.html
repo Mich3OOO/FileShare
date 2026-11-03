@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FileShare – Sign in</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">File<span>Share</span></div>
+    <div class="header-actions">
+      <nav class="top-nav">
+        <a href="/upload.html">Upload</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="card center-card">
+      <h2>Sign in</h2>
+      <p class="hint">Administrator access</p>
+
+      <form id="login-form">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" required autofocus>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+
+        <div id="message" class="message"></div>
+
+        <button type="submit" style="width:100%; margin-top:18px;">Sign in</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: fileshare
+      POSTGRES_USER: fileshare
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fileshare}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fileshare -d fileshare"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  app:
+    build: .
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=fileshare;Username=fileshare;Password=${POSTGRES_PASSWORD:-fileshare}"
+      Admin__Username: ${ADMIN_USER:-admin}
+      Admin__Password: ${ADMIN_PASSWORD:-change-me}
+      Storage__RootPath: /data/files
+    volumes:
+      - filedata:/data/files
+      - dpkeys:/root/.aspnet/DataProtection-Keys
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  filedata:
+  dpkeys:

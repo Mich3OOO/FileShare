@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FileShare – Admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">File<span>Share</span></div>
+    <div class="header-actions">
+      <nav class="top-nav">
+        <a href="/upload.html">Upload</a>
+        <a href="/index.html" class="active">Admin</a>
+      </nav>
+      <div class="header-divider"></div>
+      <span id="username"></span>
+      <button class="secondary small" id="logout-btn">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Active files -->
+    <section class="card">
+      <h2>Active files</h2>
+      <p class="hint">Anyone with a link can download. Every download extends the link by the duration chosen at upload.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>Size</th>
+              <th>Download link</th>
+              <th>Uploaded</th>
+              <th>Expires</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="files-body">
+            <tr><td colspan="6" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Access codes -->
+    <section class="card">
+      <h2>Access codes</h2>
+      <p class="hint">Guests use a code to upload. Single-use codes are consumed after the first upload.</p>
+
+      <div class="row">
+        <div>
+          <label for="code-type">Code type</label>
+          <select id="code-type">
+            <option value="single">Single-use</option>
+            <option value="reusable">Reusable</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="create-code-btn">Generate code</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table style="margin-top:18px;">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Type</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="codes-body">
+            <tr><td colspan="4" class="empty">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Direct upload -->
+    <section class="card">
+      <h2>Upload a file</h2>
+      <p class="hint">Upload directly as admin, no access code needed.</p>
+
+      <div class="row">
+        <div style="flex:2;">
+          <label for="admin-file">File</label>
+          <input type="file" id="admin-file">
+        </div>
+        <div>
+          <label for="admin-days">Keep for</label>
+          <select id="admin-days">
+            <option value="1">1 day</option>
+            <option value="3" selected>3 days</option>
+            <option value="7">7 days</option>
+          </select>
+        </div>
+        <div class="actions">
+          <button id="upload-btn">Upload</button>
+        </div>
+      </div>
+      <div class="progress" id="upload-progress"><div class="bar" id="upload-bar"></div></div>
+      <div id="upload-message" class="message"></div>
+
+      <div class="result" id="upload-result">
+        <strong>Upload complete</strong>
+        <div class="url-row">
+          <input type="text" id="upload-url" readonly>
+          <button class="secondary small" data-copy="#upload-url">Copy</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Change password -->
+    <section class="card">
+      <h2>Change password</h2>
+      <form id="password-form">
+        <div class="row">
+          <div>
+            <label for="current-password">Current password</label>
+            <input type="password" id="current-password" autocomplete="current-password" required>
+          </div>
+          <div>
+            <label for="new-password">New password</label>
+            <input type="password" id="new-password" autocomplete="new-password" minlength="8" required>
+          </div>
+          <div class="actions">
+            <button type="submit">Update password</button>
+          </div>
+        </div>
+        <div id="password-message" class="message"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

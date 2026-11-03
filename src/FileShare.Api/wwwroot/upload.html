@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FileShare – Upload</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <div class="brand">File<span>Share</span></div>
+    <div class="header-actions">
+      <nav class="top-nav">
+        <a href="/upload.html" class="active">Upload</a>
+        <a href="/index.html">Admin</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="card center-card" style="max-width:520px;">
+      <h2>Upload a file</h2>
+      <p class="hint">Enter your access code, choose how long to keep the file, and upload.</p>
+
+      <form id="upload-form">
+        <label for="code">Access code</label>
+        <input type="text" id="code" class="mono" placeholder="e.g. AB12CD34EF" required autofocus
+               autocomplete="off" spellcheck="false">
+
+        <label>Keep the file for</label>
+        <div class="radio-group">
+          <label><input type="radio" name="days" value="1">1 day</label>
+          <label><input type="radio" name="days" value="3" checked>3 days</label>
+          <label><input type="radio" name="days" value="7">7 days</label>
+        </div>
+
+        <label>File</label>
+        <div class="dropzone" id="dropzone">
+          <strong id="dropzone-text">Choose a file</strong> or drag &amp; drop it here
+          <input type="file" id="file" style="display:none">
+        </div>
+
+        <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+        <div id="message" class="message"></div>
+
+        <button type="submit" style="width:100%; margin-top:18px;" id="submit-btn">Upload</button>
+      </form>
+
+      <div class="result" id="result">
+        <strong>Upload complete</strong>
+        <p class="muted" style="margin:4px 0 0;">Anyone with this link can download the file. Each download extends the link.</p>
+        <div class="url-row">
+          <input type="text" id="result-url" readonly>
+          <button class="secondary small" id="copy-btn">Copy</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/upload.js"></script>
+</body>
+</html>
