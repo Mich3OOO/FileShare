@@ -12,6 +12,7 @@ public static class FileEndpoints
         {
             var now = DateTimeOffset.UtcNow;
             var files = await db.Files
+                .Include(f => f.AccessCode)
                 .Where(f => f.ExpiresAt > now)
                 .OrderByDescending(f => f.CreatedAt)
                 .ToListAsync();

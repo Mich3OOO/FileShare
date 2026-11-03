@@ -55,6 +55,10 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.EnsureCreatedAsync();
 
+    // Incremental schema patches for databases created by older versions.
+    await db.Database.ExecuteSqlRawAsync(
+        "ALTER TABLE \"access_codes\" ADD COLUMN IF NOT EXISTS \"Note\" character varying(200) NULL");
+
     var auth = scope.ServiceProvider.GetRequiredService<AuthService>();
     await auth.EnsureAdminAsync(
         app.Configuration["Admin:Username"] ?? "admin",

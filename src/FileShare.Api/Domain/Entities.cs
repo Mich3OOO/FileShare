@@ -12,6 +12,7 @@ public class AccessCode
     public Guid Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public bool IsSingleUse { get; set; }
+    public string? Note { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? UsedAt { get; set; }
 }

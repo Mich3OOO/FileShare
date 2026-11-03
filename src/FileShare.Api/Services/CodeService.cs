@@ -13,7 +13,7 @@ public class CodeService
         _db = db;
     }
 
-    public async Task<AccessCode> CreateAsync(bool isSingleUse)
+    public async Task<AccessCode> CreateAsync(bool isSingleUse, string? note)
     {
         string code;
         do
@@ -26,12 +26,37 @@ public class CodeService
             Id = Guid.NewGuid(),
             Code = code,
             IsSingleUse = isSingleUse,
+            Note = NormalizeNote(note),
             CreatedAt = DateTimeOffset.UtcNow,
         };
 
         _db.AccessCodes.Add(entity);
         await _db.SaveChangesAsync();
         return entity;
+    }
+
+    public async Task<bool> UpdateNoteAsync(Guid id, string? note)
+    {
+        var entity = await _db.AccessCodes.FindAsync(id);
+        if (entity is null)
+        {
+            return false;
+        }
+
+        entity.Note = NormalizeNote(note);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    private static string? NormalizeNote(string? note)
+    {
+        var trimmed = note?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return null;
+        }
+
+        return trimmed.Length > 200 ? trimmed[..200] : trimmed;
     }
 
     public Task<List<AccessCode>> GetActiveAsync()

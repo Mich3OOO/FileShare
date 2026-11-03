@@ -4,9 +4,10 @@ using FileShare.Api.Services;
 
 namespace FileShare.Api.Endpoints;
 
-public record FileDto(Guid Id, string Name, long Size, string Url, DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt);
-public record CodeDto(Guid Id, string Code, bool IsSingleUse, DateTimeOffset CreatedAt);
-public record CreateCodeRequest(bool IsSingleUse);
+public record FileDto(Guid Id, string Name, long Size, string? Code, string? CodeNote, string Url, DateTimeOffset CreatedAt, DateTimeOffset ExpiresAt);
+public record CodeDto(Guid Id, string Code, bool IsSingleUse, string? Note, DateTimeOffset CreatedAt);
+public record CreateCodeRequest(bool IsSingleUse, string? Note);
+public record UpdateCodeRequest(string? Note);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
 
 public static class EndpointHelpers
@@ -18,7 +19,8 @@ public static class EndpointHelpers
         => $"{context.Request.Scheme}://{context.Request.Host}/d/{token}";
 
     public static FileDto ToDto(HttpContext context, FileItem item)
-        => new(item.Id, item.OriginalName, item.Size, BuildDownloadUrl(context, item.Token), item.CreatedAt, item.ExpiresAt);
+        => new(item.Id, item.OriginalName, item.Size, item.AccessCode?.Code, item.AccessCode?.Note,
+            BuildDownloadUrl(context, item.Token), item.CreatedAt, item.ExpiresAt);
 
     public static int? ParseDurationDays(string raw)
         => int.TryParse(raw, out var days) && days is 1 or 3 or 7 ? days : null;

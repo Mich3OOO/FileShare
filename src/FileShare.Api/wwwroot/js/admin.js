@@ -20,13 +20,18 @@ async function loadFiles() {
   try {
     const files = await api('/api/files');
     if (files.length === 0) {
-      filesBody.innerHTML = '<tr><td colspan="6" class="empty">No active files</td></tr>';
+      filesBody.innerHTML = '<tr><td colspan="7" class="empty">No active files</td></tr>';
       return;
     }
     filesBody.innerHTML = files.map((f) => `
       <tr>
         <td class="name-cell" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</td>
         <td class="nowrap muted">${formatBytes(f.size)}</td>
+        <td class="nowrap">
+          ${f.code
+            ? `<span class="badge gray mono" title="${escapeHtml(f.codeNote || 'No note')}">${escapeHtml(f.code)}</span>`
+            : '<span class="badge">Direct</span>'}
+        </td>
         <td>
           <div class="link-cell">
             <span class="mono" title="${escapeHtml(f.url)}">${escapeHtml(shortUrl(f.url))}</span>
@@ -40,7 +45,7 @@ async function loadFiles() {
         </td>
       </tr>`).join('');
   } catch (err) {
-    filesBody.innerHTML = `<tr><td colspan="6" class="empty">${escapeHtml(err.message)}</td></tr>`;
+    filesBody.innerHTML = `<tr><td colspan="7" class="empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -65,7 +70,7 @@ async function loadCodes() {
   try {
     const codes = await api('/api/codes');
     if (codes.length === 0) {
-      codesBody.innerHTML = '<tr><td colspan="4" class="empty">No active codes</td></tr>';
+      codesBody.innerHTML = '<tr><td colspan="5" class="empty">No active codes</td></tr>';
       return;
     }
     codesBody.innerHTML = codes.map((c) => `
@@ -76,13 +81,17 @@ async function loadCodes() {
             ${c.isSingleUse ? 'Single-use' : 'Reusable'}
           </span>
         </td>
+        <td>
+          <input type="text" class="note-input" data-note-id="${c.id}" maxlength="200"
+                 placeholder="Add note" value="${escapeHtml(c.note || '')}">
+        </td>
         <td class="nowrap muted">${formatDate(c.createdAt)}</td>
         <td class="nowrap">
           <button class="danger small" data-delete-code="${c.id}">Delete</button>
         </td>
       </tr>`).join('');
   } catch (err) {
-    codesBody.innerHTML = `<tr><td colspan="4" class="empty">${escapeHtml(err.message)}</td></tr>`;
+    codesBody.innerHTML = `<tr><td colspan="5" class="empty">${escapeHtml(err.message)}</td></tr>`;
   }
 }
 
@@ -94,9 +103,34 @@ codesBody.addEventListener('click', async (e) => {
   }
 });
 
+// Notes are edited inline: saved on blur or Enter.
+codesBody.addEventListener('change', async (e) => {
+  const input = e.target.closest('[data-note-id]');
+  if (!input) return;
+  try {
+    await api(`/api/codes/${input.dataset.noteId}`, {
+      method: 'PUT',
+      body: { note: input.value.trim() || null },
+    });
+    loadCodes();
+  } catch (err) {
+    alert(err.message);
+    loadCodes();
+  }
+});
+
+codesBody.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.matches('.note-input')) {
+    e.preventDefault();
+    e.target.blur();
+  }
+});
+
 document.getElementById('create-code-btn').addEventListener('click', async () => {
   const isSingleUse = document.getElementById('code-type').value === 'single';
-  await api('/api/codes', { method: 'POST', body: { isSingleUse } });
+  const note = document.getElementById('code-note').value.trim();
+  await api('/api/codes', { method: 'POST', body: { isSingleUse, note: note || null } });
+  document.getElementById('code-note').value = '';
   loadCodes();
 });
 
@@ -174,6 +208,27 @@ document.getElementById('password-form').addEventListener('submit', async (e) =>
   }
 });
 
+/* ---------- Refresh ---------- */
+
+const refreshBtn = document.getElementById('refresh-btn');
+const lastUpdated = document.getElementById('last-updated');
+
+async function refreshAll() {
+  refreshBtn.disabled = true;
+  await Promise.all([loadFiles(), loadCodes()]);
+  lastUpdated.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+  refreshBtn.disabled = false;
+}
+
+refreshBtn.addEventListener('click', refreshAll);
+
+// Auto-refresh every 30s, paused while a note is being edited
+// so the re-render never clobbers the input.
+setInterval(() => {
+  if (codesBody.contains(document.activeElement)) return;
+  refreshAll();
+}, 30000);
+
 /* ---------- Session ---------- */
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
@@ -188,6 +243,5 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   } catch {
     return;
   }
-  loadFiles();
-  loadCodes();
+  refreshAll();
 })();

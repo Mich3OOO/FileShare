@@ -30,6 +30,7 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Code).IsUnique();
             entity.Property(e => e.Code).HasMaxLength(32);
+            entity.Property(e => e.Note).HasMaxLength(200);
         });
 
         modelBuilder.Entity<FileItem>(entity =>

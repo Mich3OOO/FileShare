@@ -15,6 +15,9 @@
         <a href="/index.html" class="active">Admin</a>
       </nav>
       <div class="header-divider"></div>
+      <button class="secondary small" id="refresh-btn">↻ Refresh</button>
+      <span id="last-updated" class="header-meta"></span>
+      <div class="header-divider"></div>
       <span id="username"></span>
       <button class="secondary small" id="logout-btn">Sign out</button>
     </div>
@@ -31,6 +34,7 @@
             <tr>
               <th>File</th>
               <th>Size</th>
+              <th>Code</th>
               <th>Download link</th>
               <th>Uploaded</th>
               <th>Expires</th>
@@ -38,7 +42,7 @@
             </tr>
           </thead>
           <tbody id="files-body">
-            <tr><td colspan="6" class="empty">Loading…</td></tr>
+            <tr><td colspan="7" class="empty">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -57,6 +61,10 @@
             <option value="reusable">Reusable</option>
           </select>
         </div>
+        <div style="flex:2;">
+          <label for="code-note">Note (optional)</label>
+          <input type="text" id="code-note" placeholder="e.g. For client Acme" maxlength="200">
+        </div>
         <div class="actions">
           <button id="create-code-btn">Generate code</button>
         </div>
@@ -68,12 +76,13 @@
             <tr>
               <th>Code</th>
               <th>Type</th>
+              <th>Note</th>
               <th>Created</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="codes-body">
-            <tr><td colspan="4" class="empty">Loading…</td></tr>
+            <tr><td colspan="5" class="empty">Loading…</td></tr>
           </tbody>
         </table>
       </div>

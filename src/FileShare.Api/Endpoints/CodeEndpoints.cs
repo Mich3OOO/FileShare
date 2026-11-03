@@ -10,15 +10,21 @@ public static class CodeEndpoints
         app.MapGet("/api/codes", async (AppDbContext db, CodeService codes) =>
         {
             var active = await codes.GetActiveAsync();
-            return Results.Ok(active.Select(c => new CodeDto(c.Id, c.Code, c.IsSingleUse, c.CreatedAt)));
+            return Results.Ok(active.Select(c => new CodeDto(c.Id, c.Code, c.IsSingleUse, c.Note, c.CreatedAt)));
         })
         .RequireAuthorization();
 
         app.MapPost("/api/codes", async (CodeService codes, CreateCodeRequest request) =>
         {
-            var entity = await codes.CreateAsync(request.IsSingleUse);
-            return Results.Ok(new CodeDto(entity.Id, entity.Code, entity.IsSingleUse, entity.CreatedAt));
+            var entity = await codes.CreateAsync(request.IsSingleUse, request.Note);
+            return Results.Ok(new CodeDto(entity.Id, entity.Code, entity.IsSingleUse, entity.Note, entity.CreatedAt));
         })
+        .RequireAuthorization();
+
+        app.MapPut("/api/codes/{id:guid}", async (Guid id, CodeService codes, UpdateCodeRequest request) =>
+            await codes.UpdateNoteAsync(id, request.Note)
+                ? Results.Ok(new { ok = true })
+                : EndpointHelpers.Error("Code not found.", StatusCodes.Status404NotFound))
         .RequireAuthorization();
 
         app.MapDelete("/api/codes/{id:guid}", async (Guid id, CodeService codes) =>
